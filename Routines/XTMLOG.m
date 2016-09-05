@@ -5,15 +5,24 @@ XTMLOG ;JLI/FO-OAK - LOG4M M LOGGING UTILITY ;11/15/10  10:43
  ; Routine provides logging capability similar in various
  ; respects to Log4J.
  ;
- D EN^XTMUNIT("XTMTSTL1")
+ ; TODO (sam): I added SAVEARR b/c I didn't realize the DEBUG and INFO
+ ;       can expand out globals. It needs to be deprecated.
+ ; TODO (sam): CLEAR^XTMLOG1 clears an XTMP log with the name of the entry, not
+ ;             the name of the global. This needs to be fixed.
+ ; TODO (sam): I removed Joel's ability for the socket to become a server,
+ ;             rather than a client. I couldn't ever get it to work. I should
+ ;             try harder next time and support both Server and Client models.
+ ;
+ D EN^%ut("XTMLT1",2)
  Q
  ;
 INITFILE(DIRREF,FILEREF,NAME) ; jli .SR -- Configuration is read a file (DIRREF is the directory, and FILEREF is the filename)
  N XTLOGLIN S XTLOGLIN=$P($STACK($STACK-1,"PLACE")," ")
  N HOSTGLOB
  S HOSTGLOB=$NA(^TMP("XTMLOG1",$J)) K @HOSTGLOB S @HOSTGLOB@(0)=""
- I '$$FTG^%ZISH(DIRREF,FILEREF,$NA(@HOSTGLOB@(1)),3) Q 0
- Q $$INITIAL(HOSTGLOB,$G(NAME,"XTMLOG"),XTLOGLIN)
+ I '$$FTG^%ZISH(DIRREF,FILEREF,$NA(@HOSTGLOB@(1)),3) Q:$Q 0 Q
+ N % S %=$$INITIAL(HOSTGLOB,$G(NAME,"XTMLOG"),XTLOGLIN)
+ Q:$Q % Q
  ;
 FILEINIT(NAMEFLD) ; jli .SR -- called as extrinsic function
  ; NAMEFLD - input - Name of entry in LOG4M CONFIG file (#8992.7 )
@@ -23,7 +32,7 @@ FILEINIT(NAMEFLD) ; jli .SR -- called as extrinsic function
  N XTLOGLIN S XTLOGLIN=$P($STACK($STACK-1,"PLACE")," ")
  N XTMLIEN,XTMLACTV,XTMLRES,XTMLERR,XTMLARR,XVAL
  ; ZEXCEPT: XTLOGINP - KILLED IN ENDLOG
- S XTMLIEN=$O(^XTV(8992.7,"B",NAMEFLD,0)) I XTMLIEN'>0 Q 0
+ S XTMLIEN=$O(^XTV(8992.7,"B",NAMEFLD,0)) I XTMLIEN'>0 Q:$Q 0 Q
  ; get data from the LOG4M CONFIG file
  D GETS^DIQ(8992.7,XTMLIEN_",",".02:.06;3.01:3.03","I","XTMLRES","XTMLERR")
  S XTMLARR=$NA(XTMLRES(8992.7,XTMLIEN_","))
@@ -33,15 +42,18 @@ FILEINIT(NAMEFLD) ; jli .SR -- called as extrinsic function
  ;S XVAL=@XTMLARR@(.07,"I") I (XVAL="M")!(XVAL="P") S XTLOGINP(NAMEFLD,"OUTTYPE")=XVAL,XTLOGINP(NAMEFLD,"OUTSPECS")=@XTMLARR@(.08,"I") ;121228
  S XVAL=@XTMLARR@(3.01,"I") I (XVAL="M")!(XVAL="P") S XTLOGINP(NAMEFLD,"OUTTYPE")=XVAL S:XVAL="M" XTLOGINP(NAMEFLD,"OUTSPECS")=@XTMLARR@(3.02,"I") S:XVAL="P" XTLOGINP(NAMEFLD,"OUTSPECS")=@XTMLARR@(3.03,"I") ; 121228
  I @XTMLARR@(.02,"I")="E" Q $$INITEASY($G(@XTMLARR@(.03,"I")),$G(@XTMLARR@(.04,"I")),NAMEFLD,XTLOGLIN,$G(@XTMLARR@(.05,"I")),$G(@XTMLARR@(.06,"I")))
- Q $$INITIAL($NA(@XTMLARR@(1)),NAMEFLD,XTLOGLIN)
+ N % S %=$$INITIAL($NA(@XTMLARR@(1)),NAMEFLD,XTLOGLIN)
+ Q:$Q % Q
  ;
 INITGLOB(HOSTGLOB,NAME,XTLOGLIN) ; Configuration data is read under a global root - HOSTGLOB is a closed global root
  I '$D(XTLOGLIN) S XTLOGLIN=$P($STACK($STACK-1,"PLACE")," ")
- Q $$INITIAL(HOSTGLOB,$G(NAME,"XTMLOG"),XTLOGLIN)
+ N % S %=$$INITIAL(HOSTGLOB,$G(NAME,"XTMLOG"),XTLOGLIN)
+ Q:$Q % Q
  ;
 INITNONE(NAME) ; No configuration data to read - use defaults - console and global logging
  N XTLOGLIN S XTLOGLIN=$P($STACK($STACK-1,"PLACE")," ")
- Q $$INITIAL("",$G(NAME,"XTMLOG"),"",XTLOGLIN)
+ N % S %=$$INITIAL("",$G(NAME,"XTMLOG"),"",XTLOGLIN)
+ Q:$Q % Q
  ;
 INITEASY(CONFIG,LEVEL,NAME,XTLOGLIN,XTMLROUS,XTMLUSRS) ;
  ; for INITEASY indicate the type of appenders desired as a series of ';'-pieces with names or first
@@ -51,7 +63,7 @@ INITEASY(CONFIG,LEVEL,NAME,XTLOGLIN,XTMLROUS,XTMLUSRS) ;
  ;       Global  -- Top Subscript under XTMP, if not specified "XTMLOG" is the default
  ;       Socket  -- Port number for output of the logging data, if not specified 8025 is the default
  ;
- ;    use of D INITEASY^XTMLOG1("C;G,LOGDATA;S,9450","WARN") would have logging sent to
+ ;    use of D INITEASY^XTMLOG("C;G,LOGDATA;S,127.0.0.1:9450","WARN") would have logging sent to
  ;            the console,
  ;            stored under ^XTMP("LOGDATA",  for a week, and
  ;            sent out on a socket at port 9450 on the current system in real time
@@ -62,7 +74,8 @@ INITEASY(CONFIG,LEVEL,NAME,XTLOGLIN,XTMLROUS,XTMLUSRS) ;
  ;
  I '$D(XTLOGLIN) N XTLOGLIN S XTLOGLIN=$P($STACK($STACK-1,"PLACE")," ")
  S CONFIG="*"_CONFIG I $G(LEVEL)'="" S CONFIG=CONFIG_";,"_LEVEL
- Q $$INITIAL(CONFIG,$G(NAME,"XTMLOG"),XTLOGLIN,$G(XTMLROUS),$G(XTMLUSRS))
+ N % S %=$$INITIAL(CONFIG,$G(NAME,"XTMLOG"),XTLOGLIN,$G(XTMLROUS),$G(XTMLUSRS))
+ Q:$Q % Q
  ;
 INITIAL(HOSTGLOB,NAME,XTLOGLIN,XTMLROUS,XTMLUSRS) ;
  N XX,TESTLIST,I,X,XTCMLCNT,XTMLROU,XTMLCNT,XTMLRCNT
