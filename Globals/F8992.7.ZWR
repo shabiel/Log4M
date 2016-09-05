@@ -1,5 +1,5 @@
 KBANXDD - FILE 8992.7
-3160905.13144 ZWR
+3160905.135807 ZWR
 ^DIC(8992.7,0)="LOG4M CONFIG^8992.7"
 ^DIC(8992.7,0,"AUDIT")="@"
 ^DIC(8992.7,0,"DD")="@"
@@ -25,7 +25,7 @@ KBANXDD - FILE 8992.7
 ^DIC(8992.7,"%D",15,0)="the file."
 ^DD(8992.7,0)="FIELD^^.06^11"
 ^DD(8992.7,0,"DDA")="N"
-^DD(8992.7,0,"DT")=3121220
+^DD(8992.7,0,"DT")=3160905
 ^DD(8992.7,0,"IX","B",8992.7,.01)=""
 ^DD(8992.7,0,"NM","LOG4M CONFIG")=""
 ^DD(8992.7,0,"VR")=7.3
@@ -75,8 +75,8 @@ KBANXDD - FILE 8992.7
 ^DD(8992.7,.02,21,11,0)="It is recommended that the YES, EASY CONFIG be used to set the logging "
 ^DD(8992.7,.02,21,12,0)="ACTIVE."
 ^DD(8992.7,.02,"DT")=3121220
-^DD(8992.7,.03,0)="EZ ENTRY^F^^0;3^K:$L(X)>40!($L(X)<3) X"
-^DD(8992.7,.03,3)="Enter the configuration specification, 3 to 40 characters."
+^DD(8992.7,.03,0)="EZ ENTRY^F^^0;3^K:$L(X)>40!($L(X)<1) X"
+^DD(8992.7,.03,3)="Answer must be 1-40 characters in length."
 ^DD(8992.7,.03,21,0)="^^9^9^3121220^"
 ^DD(8992.7,.03,21,1,0)="The EZ ENTRY field holds a string of text that will be evaluated as a "
 ^DD(8992.7,.03,21,2,0)="specification for the logging method and location of data storage.  If "
@@ -87,7 +87,7 @@ KBANXDD - FILE 8992.7
 ^DD(8992.7,.03,21,7,0)="under ^XTMP could be a different name, e.g., an entry of ""G,MYTEST""  would"
 ^DD(8992.7,.03,21,8,0)="result in the data being stored under ^XTMP(""MYTEST"",$J,  with no output "
 ^DD(8992.7,.03,21,9,0)="to the console."
-^DD(8992.7,.03,"DT")=3121220
+^DD(8992.7,.03,"DT")=3160905
 ^DD(8992.7,.04,0)="EZ LEVEL^S^F:FATAL;E:ERROR;W:WARN;I:INFO;D:DEBUG;^0;4^Q"
 ^DD(8992.7,.04,3)="Select the level of reporting desired. A lower level (e.g., DEBUG) would include that level and all above it."
 ^DD(8992.7,.04,21,0)="^^10^10^3121220^"
