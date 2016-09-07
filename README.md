@@ -8,6 +8,14 @@ are checked and then ignored.
 Logging is useful to verify behavior during development and to find out
 problems in production. If it is turned off, it has no effect.
 
+# Download, Installation & License
+
+Download from here: https://github.com/shabiel/Log4M/releases/latest
+
+Install as KIDS build.
+
+Licensed under Apache 2.0.
+
 # Brief Guide
 A more comprehensive guide is in the wiki.
 
