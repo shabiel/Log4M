@@ -6,12 +6,17 @@ XTMLOG ;JLI/FO-OAK - LOG4M M LOGGING UTILITY ;11/15/10  10:43
  ; respects to Log4J.
  ;
  ; TODO (sam): I added SAVEARR b/c I didn't realize the DEBUG and INFO
- ;       can expand out globals. It needs to be deprecated.
+ ;             can expand out arrays. It needs to be deprecated. HOWEVER,
+ ;             DEBUG and INFO don't work with sockets. So that needs to be fixed
+ ;             first!
  ; TODO (sam): CLEAR^XTMLOG1 clears an XTMP log with the name of the entry, not
  ;             the name of the global. This needs to be fixed.
  ; TODO (sam): I removed Joel's ability for the socket to become a server,
  ;             rather than a client. I couldn't ever get it to work. I should
  ;             try harder next time and support both Server and Client models.
+ ; TODO (sam): LOGVIEW^XTMLOG has a problem with sorting dates when asking for
+ ;             a display of all log entries b/c some dates are not stored
+ ;             canonically. Need to fix.
  ;
  D EN^%ut("XTMLT1",2)
  Q
