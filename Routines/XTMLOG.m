@@ -9,16 +9,11 @@ XTMLOG ;JLI/FO-OAK - LOG4M M LOGGING UTILITY ;11/15/10  10:43
  ;             can expand out arrays. It needs to be deprecated. HOWEVER,
  ;             DEBUG and INFO don't work with sockets. So that needs to be fixed
  ;             first!
- ; TODO (sam): CLEAR^XTMLOG1 clears an XTMP log with the name of the entry, not
- ;             the name of the global. This needs to be fixed.
  ; TODO (sam): I removed Joel's ability for the socket to become a server,
  ;             rather than a client. I couldn't ever get it to work. I should
  ;             try harder next time and support both Server and Client models.
- ; TODO (sam): LOGVIEW^XTMLOG has a problem with sorting dates when asking for
- ;             a display of all log entries b/c some dates are not stored
- ;             canonically. Need to fix.
  ;
- D EN^%ut("XTMLT1",2)
+ D:$t(^%ut)]"" EN^%ut("XTMLT1",2)
  Q
  ;
 INITFILE(DIRREF,FILEREF,NAME) ; jli .SR -- Configuration is read a file (DIRREF is the directory, and FILEREF is the filename)
@@ -112,13 +107,13 @@ STOPLOG(XTLOGNAM,OUTTYPE,OUTSPECS) ; JUST ANOTHER NAME FOR ENDLOG
  Q
  ;
 ENDLOG(XTLOGNAM,OUTTYPE,OUTSPECS) ; OUTTYPE, AND OUTSPECS ARE OPTIONAL - REMOVES LOGNAM FROM LOGGING
- ; ZEXCEPT: XTLOGINP - KILLED HERE, SET ELSEWHERE
+ ; ZEXCEPT: XTLOGINP,XTMTCPIO - KILLED HERE, SET ELSEWHERE
  S XTLOGNAM=$G(XTLOGNAM,"XTMLOG")
  I $G(OUTTYPE)="M"!($G(XTLOGINP(XTLOGNAM,"OUTTYPE"))="M") D SENDMAIL(XTLOGNAM,$S($G(OUTSPECS)'="":OUTSPECS,$G(XTLOGINP(XTLOGNAM,"OUTSPECS"))'="":XTLOGINP(XTLOGNAM,"OUTSPECS"),1:""))
  I $G(OUTTYPE)="P"!($G(XTLOGINP(XTLOGNAM,"OUTTYPE"))="P") D PRINTIT(XTLOGNAM,$S($G(OUTSPECS)'="":OUTSPECS,$G(XTLOGINP(XTLOGNAM,"OUTSPECS"))'="":XTLOGINP(XTLOGNAM,"OUTSPECS"),1:""))
  I $D(XTLOGINP(XTLOGNAM,"PORT")) D CLOSE^%ZISTCP
  K XTLOGINP(XTLOGNAM)
- K XTMTCPIO ; **TODO** Document
+ K XTMTCPIO ; This variable's presence indicates that we have a current connexion.
  Q
  ;
 EASYSET(CONFIG,NAME,XTLOGINP) ;
@@ -150,13 +145,14 @@ SETGLOB(ID,SUBSCRIP,NAME,XTLOGINP) ;
  S @NODE@("LAYOUT.CONVERSIONPATTERN")="%d %-5p %L %F - %m%n"
  S SUBSCRIP=$S($G(SUBSCRIP)="":"XTMLOG",1:SUBSCRIP)
  S:'$D(INFO("$H")) INFO("$H")=$H
- N XTMLOGDT,FORMAT S FORMAT="{yyMMdd.HHmmss",XTMLOGDT=$$GETDATE^XTMLOG1(.INFO,.FORMAT)
+ ;N XTMLOGDT,FORMAT S FORMAT="{yyMMdd.HHmmss",XTMLOGDT=$$GETDATE^XTMLOG1(.INFO,.FORMAT)
+ N XTMLOGDT S XTMLOGDT=$$NOW^XLFDT()
  S @NODE@("CLOSEDROOT")=$NA(^XTMP(SUBSCRIP,DUZ,XTMLOGDT,$J)) ; use current $H as constant and $J
- S ^XTMP(SUBSCRIP,0)=$$FMADD^XLFDT(DT,7) ; Mark it to be saved for a week
+ S ^XTMP(SUBSCRIP,0)=$$FMADD^XLFDT(DT,7)_U_DT ; Mark it to be saved for a week
  Q
  ;
 SETSOCK(ID,PORT,NAME,XTLOGINP) ;
- ; VEN/SMH - I don't have a frikking clue why Joel is starting a server
+ ; ZEXCEPT: XTMTCPIO Set here, killed in ENDLOG
  N NODE
  S NODE=$NA(XTLOGINP(NAME,"APPENDER",ID))
  S @NODE@("TYPE")="SOCKETAPPENDER",@NODE@("LAYOUT")="PATTERNLAYOUT"
@@ -165,7 +161,7 @@ SETSOCK(ID,PORT,NAME,XTLOGINP) ;
  S @NODE@("PORT")=PORT
  ; D START^XTMLOSKT(PORT) ; Start socket running if it isn't already
  N HOST S HOST=$P(PORT,":")
- S REALPORT=$P(PORT,":",2)
+ N REALPORT S REALPORT=$P(PORT,":",2)
  D
  . I $D(XTMTCPIO) QUIT
  . N IO ; protect our precious IO
@@ -379,3 +375,11 @@ REALERR ; entry to log a real error
  S $ETRAP=""
  G ERR^ZU
  Q
+ ; [Public Interactive Entry Points]
+ ; View Global Logs
+VIEW G VIEW^XTMLOG1
+DISPLAY G DISPLAY^XTMLOG1
+VIEWLOG G VIEWLOG^XTMLOG1
+LOGVIEW G LOGVIEW^XTMLOG1
+ ; Clear Global Logs
+CLEAR G CLEAR^XTMLOG1

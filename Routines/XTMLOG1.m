@@ -44,14 +44,15 @@ GLOBAL(ROOT,INFO,MESSAGE,VARS,XTMLOARR) ;
  N GLOBREF,XTMLOGI
  S GLOBREF=$NA(^TMP("XTMLGLOB",$J)) K @GLOBREF
  D SETLINES(GLOBREF,ROOT,.INFO,MESSAGE,$G(VARS),$G(XTMLOARR))
- N XTMLOGDT S XTMLOGDT=$$GETDATE(.INFO,"{yyMMdd.HHmmss")
+ ; N XTMLOGDT S XTMLOGDT=$$GETDATE(.INFO,"{yyMMdd.HHmmss")
+ N XTMLOGDT S XTMLOGDT=$$HTFM^XLFDT(INFO("$H"))
  S:INFO("LOCATION")="" INFO("LOCATION")=" "
  I $G(INFO("SAVE")) M @(@ROOT@("CLOSEDROOT"))@(XTMLOGDT,INFO("COUNT"),INFO("LOCATION"),VARS)=@VARS
  F XTMLOGI=0:0 S XTMLOGI=$O(@GLOBREF@(XTMLOGI)) Q:XTMLOGI'>0  S @(@ROOT@("CLOSEDROOT"))@(XTMLOGDT,INFO("COUNT"),INFO("LOCATION"),XTMLOGI)=@GLOBREF@(XTMLOGI)
  Q
  ;
 SOCKETAP(ROOT,INFO,MESSAGE,VARS,XTMLOARR) ; Socket appender
- ; ZEXCEPT XTMTCPIO from XTMLOG socket initializer at SETSOCK
+ ; ZEXCEPT: XTMTCPIO from XTMLOG socket initializer at SETSOCK
  Q:'$D(XTMTCPIO)  ; No open device
  N $ET,$ES S $ET="Q:($ES>1)  K XTMTCPIO S $EC="""""  ; bye bye. Kill TCPIO and unwind.
  U XTMTCPIO
@@ -198,6 +199,7 @@ FLATTEN(VARS,GLOBREF) ; Flatten via $QUERY; VARS is a string
  . N STOPVAR S STOPVAR=$NA(@VAR,QL)
  . S VAR=$Q(@VAR) Q:$NA(@VAR,QL)'=STOPVAR  Q:VAR=""  S CNT=CNT+1,@GLOBREF@(CNT)=@VAR
  QUIT
+ ;
 ZWRITE(NAME,QS,QSREP,SOC) ; Replacement for ZWRITE ; Public Proc
  ; Pass NAME by name as a closed reference. lvn and gvn are both supported.
  ; QS = Query Subscript to replace. Optional.
@@ -277,60 +279,65 @@ RCC(NA) ;Replace control chars in NA with $C( ). Returns encoded string; Public 
  Q OUT
  ;
  ;
- ; NB: I realize I made a logic error. The global entry is in G., not the name of the .01
- ; TODO: needs to be fixed.
 VIEW ;
 DISPLAY ; 
 VIEWLOG ; 
 LOGVIEW ; [Public] View logs interactively in ^XTMP
  ; ZEXCEPT: DTIME
- ;
- ; Select Logging Name in ^XTMP
  N X,Y,DIC
+ F  D VIEWLOOP Q:Y<0
+ QUIT
+ ;
+VIEWLOOP ; [Private]
+ ; ZEXCEPT: DTIME,DIC,Y
+ ;
+ ; Select Logging Name in 8992.7
  S DIC=8992.7,DIC(0)="AEMQ" D ^DIC
  Q:(Y<1)
  ;
- ; Get the name (the .01 field, thus the 2nd piece of Y)
- N XTMLSUB S XTMLSUB=$P(Y,U,2)
+ ; Get global entry
+ N XTMLSUB S XTMLSUB=$$G(+Y)
+ ;
+ I $G(XTMLSUB)="" W "Cannot determine Global. Use RUN^XTMLOG1 manually",! QUIT
  ;
  ; Get a user for whom we are logging. This is a CPU intensive operation. I need to figure out how to speed it up.
- K X,Y,DIC
+ N X,Y,DIC ; Shadow the previous Y, so when we pop, Y is the last ^DIC's value.
  S DIC=200,DIC(0)="AEMQ",DIC("S")="I $D(^XTMP(XTMLSUB,Y))" D ^DIC
- Q:(Y<1)
- S Y=+Y
+ Q:Y<1
+ N USER S USER=+Y
  ;
- ; Select date/time. Right now this has many problems. Need to be refactored to use ^TMP with a Fileman data structure so that we can use ^DIC
- N DONE S DONE=0
- F  D  Q:DONE
- . W ! R "Select a date/time: ",X:$G(DTIME,300)
- . I X="^" S DONE=1 QUIT
- . I X=" " S X=$G(^DISV(DUZ,XTMLSUB)) I X="" QUIT  ; Try again
- . I X="" QUIT
- . I X="?" W ! X "N I S I=""""  F  S I=$O(^XTMP(XTMLSUB,Y,I)) Q:I=""""  W I,!" QUIT  ; For inside xexecute so that we can quit on the same line
- . I +X&($D(^XTMP(XTMLSUB,Y,X)))!(X="ALL") D  QUIT  ; Success!
- . . S ^DISV(DUZ,XTMLSUB)=X
- . . S DONE=1
- QUIT:(X="^"!(X=" ")!(X=""))  ; If we ^ out, quit.
- ;
- I +X D RUN(X,Y) QUIT
- I X="ALL" S X="" F  S X=$O(^XTMP(XTMLSUB,Y,X)) Q:X=""  D RUN(X)
+ ; Make a pretend fileman file.
+ K ^TMP("XTMLOGVIEW",$J)
+ S ^TMP("XTMLOGVIEW",$J,0)="Log Date"_U_"1.01D"_U_0_U_0
+ N I F I=0:0 S I=$O(^XTMP(XTMLSUB,USER,I)) Q:'I  D
+ . N J F J=0:0 S J=$O(^XTMP(XTMLSUB,USER,I,J)) Q:'J  D
+ .. S $P(^TMP("XTMLOGVIEW",$J,0),U,4)=$P(^TMP("XTMLOGVIEW",$J,0),U,4)+1
+ .. N IEN S IEN=$P(^TMP("XTMLOGVIEW",$J,0),U,4)
+ .. S ^TMP("XTMLOGVIEW",$J,IEN,0)=I_U_J
+ .. S ^TMP("XTMLOGVIEW",$J,"B",I,IEN)=""
+ K X,Y,DIC
+ S DIC="^TMP(""XTMLOGVIEW"",$J,",DIC(0)="AEQZn",DIC("W")="W ?50,""$J: ""_$P(^(0),U,2)"
+ D ^DIC
+ K ^TMP("XTMLOGVIEW",$J)
+ Q:Y<1
+ N DATE S DATE=$P(Y(0),U,1)
+ N JOB S JOB=$P(Y(0),U,2)
+ D RUN(XTMLSUB,DATE,USER,JOB)
  QUIT
  ;
-RUN(X,DUZ) ; Runner
- ; ZEXCEPT: XTMLSUB ... defined above
+RUN(XTMLSUB,DATE,USER,JOB) ; [Public] Runner
  N LINE S $P(LINE,"=",80)="="
  ; Now loop through the global.
- N R S R=$NA(^XTMP(XTMLSUB,DUZ,X))
- N I,J,K,L,M,N S (I,J,K,L,M,N)=""
- F  S I=$O(@R@(I)) Q:I=""  D  ; Job Number
- . W $$BOLD(),$$CJ^XLFSTR("---- JOB NUMBER "_I_" ----",80),$$RESET,!!
- . F  S J=$O(@R@(I,J)) Q:J=""  D  ; Log Start Time
- . . F  S K=$O(@R@(I,J,K)) Q:K=""  D  ; Event counter
- . . . F  S L=$O(@R@(I,J,K,L)) Q:L=""  D  ; Routine invoking logging
- . . . . F  S M=$O(@R@(I,J,K,L,M)) Q:M=""  D  ; Log Sub
- . . . . . I +M D WRITINF(^(M)) I 1  ; If numeric, regular event
- . . . . . E  D SAVEPRT($NA(^(M)))   ; If not, it's a saved off global. Print it in ZWRITE format.
- . . . W !,$$RED,LINE,$$RESET,!! ; Write divider line before next event
+ N R S R=$NA(^XTMP(XTMLSUB,USER,DATE,JOB))
+ N J,K,L,M S (J,K,L,M)=""
+ W !,$$BOLD(),$$CJ^XLFSTR("---- JOB NUMBER "_JOB_" ----",80),$$RESET,!!
+ F  S J=$O(@R@(J)) Q:J=""  D  ; Log Start Time
+ . F  S K=$O(@R@(J,K)) Q:K=""  D  ; Event counter
+ . . F  S L=$O(@R@(J,K,L)) Q:L=""  D  ; Routine invoking logging
+ . . . F  S M=$O(@R@(J,K,L,M)) Q:M=""  D  ; Log Sub
+ . . . . I +M D WRITINF(^(M)) I 1  ; If numeric, regular event
+ . . . . E  D SAVEPRT($NA(^(M)))   ; If not, it's a saved off global. Print it in ZWRITE format.
+ . . W !,$$RED,LINE,$$RESET,!! ; Write divider line before next event
  QUIT
 WRITINF(L) ; [INTERNAL ONLY] Write informational line
  N TIME S TIME=$P(L," ")
@@ -377,5 +384,21 @@ CLEAR ; [Public] Remove logs
  N X,Y,DIC
  S DIC=8992.7,DIC(0)="AEMQ" D ^DIC
  Q:(Y<1)
- K ^XTMP($P(Y,U,2))
+ ; Get global entry
+ N XTMLSUB S XTMLSUB=$$G(+Y)
+ ;
+ I $G(XTMLSUB)="" W "Cannot determine Global. Kill XTMP Global manually",! QUIT
+ K ^XTMP(XTMLSUB)
  QUIT
+ ;
+G(Y) ; [$$ Private] Get XTMP Global
+ ; Get the EZ Entry
+ N EZENTRY S EZENTRY=$P(^XTV(8992.7,Y,0),U,3)
+ I EZENTRY="" Q ""
+ ;
+ N XTMLSUB
+ N I F I=1:1:$L(EZENTRY,";") D
+ . N ENTRY S ENTRY=$P(EZENTRY,";",I)
+ . I $E(ENTRY)="G" S XTMLSUB=$P(ENTRY,",",2)
+ ;
+ Q $G(XTMLSUB)
