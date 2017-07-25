@@ -1,0 +1,19 @@
+Original code was developed by Joel Ivey while working for the VA from
+2006-2008 onwards. Portions of the code were authored by Kevin Muldrum. Kevin's
+code is still retained but is not being used. Both of them wrote the code as
+federal employees.
+
+The code was supposed to be released in Kernel Toolkit patch 81, but was never
+offcially released.
+
+Sam Habiel (current maintainer) has made changes to the code since 2012. He
+grants use of the modified code under the Apache 2.0 license. Sam's contributions
+are:
+
+ * SAVEARR entry point.
+ * Refactoring of Socket Code
+ * ZWRITE entry point
+ * Viewing log and clearing logs entry points
+ * New documentation as Wiki on Github
+ * Unit Tests moved from ZZ namespace to XTML namespace
+ * New package created as Log4M in XTML Namespace
