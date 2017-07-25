@@ -1,6 +1,7 @@
-XTMLOG1 ;jli/fo-oak - handle appender functions for Log4M ;06/07/08  17:06
- ;;7.3;TOOLKIT;**81**;Apr 25, 1995;Build 24
- ;;Per VHA Directive 2004-038, this routine should not be modified
+XTMLOG1 ;jli/fo-oak - handle appender functions for Log4M ;2017-07-25  10:37 AM
+ ;;2.4;LOG4M;;Jul 25, 2017;Build 2
+ ; Main Author: Joel Ivey, Ph.D. from 2007-2012
+ ; Various Changes throughout by Sam Habiel, Pharm.D. 2012-2017
  Q
  ; Each appender name is truncated to a max of eight characters and is a tag for the processing
  ; for that appender.
@@ -19,12 +20,12 @@ XTMLOG1 ;jli/fo-oak - handle appender functions for Log4M ;06/07/08  17:06
  ;      of array elements should be displayed if they exist.
  ;
 CONSOLEA(ROOT,INFO,MESSAGE,VARS,XTMLOARR) ;
- U IO
+ U $P
  N GLOBREF,XTMLOGI S GLOBREF=$NA(^TMP("CONSOLEA",$J)) K @GLOBREF
- I $G(INFO("SAVE")) D 
+ I $G(INFO("SAVE")) D
  . W $C(27)_"[32m"
  . W:$X !  ; new line if we need it.
- . D ZWRITE(VARS) 
+ . D ZWRITE(VARS)
  . W $C(27)_"[0m"
  E  D SETLINES(GLOBREF,ROOT,.INFO,MESSAGE,$G(VARS),$G(XTMLOARR))
  F XTMLOGI=0:0 S XTMLOGI=$O(@GLOBREF@(XTMLOGI)) Q:XTMLOGI'>0  D
@@ -58,8 +59,8 @@ SOCKETAP(ROOT,INFO,MESSAGE,VARS,XTMLOARR) ; Socket appender
  U XTMTCPIO
  W:$X $C(13,10)  ; new line if we need it.
  N GLOBREF,XTMLOGI S GLOBREF=$NA(^TMP("SOCKETA",$J)) K @GLOBREF
- I $G(INFO("SAVE")) D 
- . D ZWRITE(VARS,,,1) 
+ I $G(INFO("SAVE")) D
+ . D ZWRITE(VARS,,,1)
  E  D SETLINES(GLOBREF,ROOT,.INFO,MESSAGE,$G(VARS),$G(XTMLOARR))
  F XTMLOGI=0:0 S XTMLOGI=$O(@GLOBREF@(XTMLOGI)) Q:XTMLOGI'>0  W @GLOBREF@(XTMLOGI) D CRFLUSH
  ; S ^TMP("XTMLOSKT","DATA",@ROOT@("PORT"),$J,INFO("COUNT"))=$$FORMAT(ROOT,.INFO,MESSAGE) ; Don't know what that accomplished
@@ -216,13 +217,13 @@ ZWRITE(NAME,QS,QSREP,SOC) ; Replacement for ZWRITE ; Public Proc
  I $L(QSREP) S INCEXPN="S $G("_QSREP_")="_QSREP_"+1"
  N L S L=$L(NAME) ; Name length
  I $E(NAME,L-2,L)=",*)" S NAME=$E(NAME,1,L-3)_")" ; If last sub is *, remove it and close the ref
- N ORIGNAME S ORIGNAME=NAME          ; 
+ N ORIGNAME S ORIGNAME=NAME          ;
  N ORIGQL S ORIGQL=$QL(NAME)         ; Number of subscripts in the original name
  I $D(@NAME)#2 W $S(QS:$$SUBNAME(NAME,QS,QSREP),1:NAME),"=",$$FORMAT1(@NAME),! D:$G(SOC) CRFLUSH        ; Write base if it exists
- ; $QUERY through the name. 
+ ; $QUERY through the name.
  ; Stop when we are out.
- ; Stop when the last subscript of the original name isn't the same as 
- ; the last subscript of the Name. 
+ ; Stop when the last subscript of the original name isn't the same as
+ ; the last subscript of the Name.
  F  S NAME=$Q(@NAME) Q:NAME=""  Q:$NA(@ORIGNAME,ORIGQL)'=$NA(@NAME,ORIGQL)  D
  . W $S(QS:$$SUBNAME(NAME,QS,QSREP),1:NAME),"=",$$FORMAT1(@NAME),! D:$G(SOC) CRFLUSH
  QUIT
@@ -280,8 +281,8 @@ RCC(NA) ;Replace control chars in NA with $C( ). Returns encoded string; Public 
  ;
  ;
 VIEW ;
-DISPLAY ; 
-VIEWLOG ; 
+DISPLAY ;
+VIEWLOG ;
 LOGVIEW ; [Public] View logs interactively in ^XTMP
  ; ZEXCEPT: DTIME
  N X,Y,DIC
@@ -361,7 +362,7 @@ SAVEPRT(G) ; [INTERNAL ONLY] Print saved array entry in G
  . . S SUBSTR=SUBSTR_QSUB_"," ; Append to string
  . S $E(SUBSTR,$L(SUBSTR))=")" ; remove final comma and replace with )
  . N REF2PRINT S REF2PRINT=REFOPEN_SUBSTR  ; Actual full global reference in ZWRITE format
- . N VAL S VAL=@G  ; Value of Subscript 
+ . N VAL S VAL=@G  ; Value of Subscript
  . N QVAL  ; Quoted value (if necessary)
  . I VAL'=+VAL S QVAL=Q_VAL_Q
  . E  S QVAL=VAL

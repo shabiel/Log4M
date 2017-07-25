@@ -1,6 +1,8 @@
-XTMLT1 ;JLI/FO-OAK TEST ROUTINE FOR LOGGER ;2/14/08  10:52
- ;;7.3;TOOLKIT;**???**;Apr 25,1995
+XTMLT1 ;JLI/FO-OAK TEST ROUTINE FOR LOGGER ;2017-07-25  10:31 AM
+ ;;2.4;LOG4M;;Jul 25, 2017;Build 2
+ ; Code authored by Joel Ivey 2008-2017. Minor changes by Sam Habiel in 2017 for bug fixes.
  D EN^%ut("XTMLT1",2)
+ QUIT
  ;
 CHECKIEN() ; returns internal entry number of XTMLT1
  N XTMLT1,FDA

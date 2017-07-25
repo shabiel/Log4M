@@ -1,5 +1,6 @@
-XTMLT4 ;JLI/FO-OAK - UNIT TESTS FOR XTMLOG ;2/19/08  13:40
- ;;7.3;TOOLKIT;**???**;Apr 25,1995
+XTMLT4 ;JLI/FO-OAK - UNIT TESTS FOR XTMLOG ;2017-07-25  10:32 AM
+ ;;2.4;LOG4M;;Jul 25, 2017;Build 2
+ ; Code authored by Joel Ivey 2008-2017. Minor changes by Sam Habiel in 2017 for bug fixes.
  D EN^%ut("XTMLT4")
  Q
  ;

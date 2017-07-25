@@ -1,6 +1,9 @@
-XTMLOG ;JLI/FO-OAK - LOG4M M LOGGING UTILITY ;11/15/10  10:43
- ;;7.3;TOOLKIT;**81**;Apr 25, 1995;Build 24
- ;;Per VHA Directive 2004-038, this routine should not be modified
+XTMLOG ;JLI/FO-OAK - LOG4M M LOGGING UTILITY ;2017-07-25  10:37 AM
+ ;;2.4;LOG4M;;Jul 25, 2017;Build 2
+ ; 
+ ; Main Author: Joel Ivey, Ph.D. from 2007-2012
+ ; Various Changes throughout by Sam Habiel, Pharm.D. 2012-2017
+ ; Includes some public domain code written by Kevin Muldrum
  ;
  ; Routine provides logging capability similar in various
  ; respects to Log4J.
@@ -13,7 +16,7 @@ XTMLOG ;JLI/FO-OAK - LOG4M M LOGGING UTILITY ;11/15/10  10:43
  ;             rather than a client. I couldn't ever get it to work. I should
  ;             try harder next time and support both Server and Client models.
  ;
- D:$t(^%ut)]"" EN^%ut("XTMLT1",2)
+ D:$t(^%ut)]"" EN^%ut("XTMLT1",3)
  Q
  ;
 INITFILE(DIRREF,FILEREF,NAME) ; jli .SR -- Configuration is read a file (DIRREF is the directory, and FILEREF is the filename)
@@ -290,6 +293,7 @@ SAVEARR(IN,OUT) ; .SR
  S XTLOGINF("PRIORITY")="DEBUG"
  I $D(OUT) M @OUT=@IN QUIT
  D LOG(,5,XTLOGLIN,IN,,1)
+ QUIT
  ;
  ;
 LOG(MESG,SET,XTLOGLIN,VARS,XTMLOARR,SAVE) ; .SR  entry point for logging an item
